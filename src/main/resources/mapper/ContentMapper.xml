@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.mapper.ContentMapper">
+
+<!-- 게시글 목록 가져오기 -->
+    <select id="contentList" resultType="Content">
+        SELECT
+            content_id, user_email, title, created_at, updated_at
+        FROM
+            CONTENT
+        ORDER BY to_number(CONTENT_ID)
+    </select>
+
+<!-- 게시글 내용 자세히 가져오기(게시글 클릭 시) -->
+    <select id="contentDetail" resultType="Content">
+        SELECT
+            c.CONTENT_ID , c.USER_EMAIL , c.TITLE , c.CREATED_AT , c.UPDATED_AT , c.CONTEXT, f.FILE_NAME, f.FILE_SIZE, f.UUID
+        FROM
+            CONTENT c
+        LEFT OUTER JOIN FILEINFO f
+        ON c.CONTENT_ID = f.CONTENT_ID
+        where c.CONTENT_ID = #{contentId}
+    </select>
+
+<!-- 게시글 댓글 -->
+    <select id="contentComment" resultType="Content">
+        SELECT
+            bc.COMMENT_ID ,bc.USER_EMAIL AS COMMENT_EMAIL, bc.CONTEXT AS COMMENT_CONTEXT, bc.CREATED_AT AS COMMENT_CREATED_AT, bc.UPDATED_AT AS COMMENT_UPDATED_AT
+        FROM
+            CONTENT c
+                INNER JOIN BOARD_COMMENT bc
+                           ON c.CONTENT_ID = bc.CONTENT_ID
+        WHERE  c.CONTENT_ID = #{contentId}
+        ORDER BY bc.CREATED_AT
+    </select>
+
+<!-- 게시글 대댓글 -->
+    <select id="contentSubComment" resultType="Content">
+        SELECT
+            sc.COMMENT_ID, sc.CONTENT_ID, sc.SUBCOMMENT_ID , sc.USER_EMAIL AS SUB_COMMENT_EMAIL, sc.CONTEXT AS SUB_COMMENT_CONTEXT, sc.CREATED_AT AS SUB_COMMENT_CREATED_AT , sc.UPDATED_AT  AS SUB_COMMENT_UPDATED_AT
+        FROM
+            CONTENT c
+                INNER JOIN BOARD_COMMENT bc
+                           ON c.CONTENT_ID = bc.CONTENT_ID
+                               AND  c.CONTENT_ID = #{contentId}
+                INNER JOIN SUB_COMMENT sc
+                           ON bc.COMMENT_ID = sc.COMMENT_ID
+                               AND  sc.CONTENT_ID = #{contentId}
+        ORDER BY SUB_COMMENT_CREATED_AT
+    </select>
+
+<!-- 게시글 작성 -->
+    <insert id="contentInsert">
+        INSERT INTO
+            CONTENT
+            (CONTENT_ID, USER_EMAIL, TITLE, CREATED_AT, CONTEXT)
+        VALUES(
+                  emp_seq.NEXTVAL,
+                  #{userEmail},
+                  #{title},
+                  TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss'),
+                  #{context}
+              )
+    </insert>
+
+<!-- 게시글 삭제 -->
+    <delete id="contentDelete">
+        DELETE
+        CONTENT
+        WHERE
+            CONTENT_ID = #{contentId}
+    </delete>
+
+<!-- 게시글 수정 -->
+    <update id="contentUpdate">
+        UPDATE
+            CONTENT
+        SET
+            title= #{title},
+            context = #{context},
+            UPDATED_AT = TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss')
+        WHERE
+            CONTENT_ID = #{contentId}
+          AND USER_EMAIL = #{userEmail}
+    </update>
+
+<!-- 댓글 작성 -->
+    <insert id="commentCreate">
+        INSERT INTO
+            BOARD_COMMENT(COMMENT_ID, USER_EMAIL, CONTENT_ID, CONTEXT, CREATED_AT, UPDATED_AT)
+        VALUES
+            (
+                comment_seq.NEXTVAL,
+                #{userEmail},
+                #{contentId},
+                #{context},
+                TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss'),
+                ''
+            )
+    </insert>
+
+<!-- 대 댓글 작성 -->
+    <insert id="commentSubCreate">
+        INSERT INTO SUB_COMMENT
+        (SUBCOMMENT_ID, COMMENT_ID, USER_EMAIL, CONTEXT, CREATED_AT, UPDATED_AT, CONTENT_ID)
+        VALUES(
+                  subcomment_seq.NEXTVAL,
+                  #{commentId},
+                  #{userEmail},
+                  #{context},
+                  TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss'),
+                  '',
+                  #{contentId})
+    </insert>
+
+<!-- 댓글 삭제 -->
+    <delete id="commentDelete">
+        DELETE
+        BOARD_COMMENT
+        WHERE
+        COMMENT_ID = #{commentId}
+    </delete>
+
+<!-- 대댓글 삭제 -->
+    <delete id="subCommentDelete">
+        DELETE
+        SUB_COMMENT
+        WHERE
+        SUBCOMMENT_ID = #{subCommentId}
+    </delete>
+
+ <!-- 댓글 수정 -->
+    <update id="commentUpdate">
+        UPDATE
+            BOARD_COMMENT
+        SET
+            context = #{context},
+            UPDATED_AT = TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss')
+        WHERE
+            CONTENT_ID = #{contentId}
+          AND USER_EMAIL = #{userEmail}
+          AND COMMENT_ID = #{commentId}
+    </update>
+
+<!-- 대댓글 수정 -->
+    <update id="subCommentUpdate">
+        UPDATE
+            SUB_COMMENT
+        SET
+            context = #{context},
+            UPDATED_AT = TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss')
+        WHERE
+            CONTENT_ID = #{contentId}
+          AND
+            USER_EMAIL = #{userEmail}
+          AND
+            COMMENT_ID = #{commentId}
+          AND
+            SUBCOMMENT_ID = #{subCommentId}
+    </update>
+
+<!-- 파일 업로드 -->
+    <insert id="fileInfo">
+        INSERT INTO
+            FILEINFO
+            (UUID, FILE_NAME, FILE_SIZE, CONTENT_ID)
+        VALUES(
+                  #{uuid},
+                  #{fileName},
+                  #{fileSize},
+                  #{contentId}
+              )
+    </insert>
+
+<!-- 업로드를 위한 게시글 번호 구하기 -->
+    <select id="fileInfoContentId" resultType="integer">
+        SELECT
+            LAST_NUMBER
+        FROM USER_SEQUENCES
+        WHERE
+            SEQUENCE_NAME='EMP_SEQ'
+    </select>
+
+<!-- 파일 삭제를 위한 파일 찾기 -->
+    <select id="fileDeleteFind" resultType="java.lang.String">
+        SELECT
+            UUID
+        FROM
+            FILEINFO
+        WHERE
+            CONTENT_ID = #{contentId}
+    </select>
+
+<!-- 파일 수정 시 삭제된 파일 삭제 -->
+    <delete id="fileDelete">
+        DELETE
+        FROM
+            FILEINFO
+        WHERE
+            UUID
+            IN(
+            <foreach collection="param" item="item" separator=",">
+            #{item}
+            </foreach>
+        )
+    </delete>
+
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.project.mapper.AuthMapper">
+
+<!-- 로그인 -->
+    <select id="userLogin" resultType="Info">
+        SELECT
+            user_name, user_email
+        FROM
+            Auth_Info
+        WHERE user_email =#{Email}
+          AND
+            user_password=#{Password}
+    </select>
+
+<!-- 아이디(이메일) 중복 체크 -->
+    <select id="userDuplicate" resultType="Info">
+        SELECT
+            user_email
+        FROM
+            Auth_Info
+        WHERE user_email =#{Email}
+    </select>
+
+<!-- 회원가입 -->
+    <insert id="userJoin">
+        INSERT INTO
+            Auth_Info
+            (USER_PASSWORD, USER_NAME, CREATED_AT, USER_EMAIL)
+        values
+            (
+                #{Password},
+                #{Name},
+                TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss'),
+                #{Email}
+            )
+    </insert>
+
+<!-- 인증번호 저장 -->
+    <insert id="userEmailCertification">
+        INSERT INTO
+            EMAIL_CERTIFICATION
+            (TEMP_USER_EMAIL, SELFAUTH, CREATED_AT)
+        values
+            (
+                #{Email},
+                #{selfAuth},
+                TO_CHAR(sysdate,'yyyy/mm/DD hh24:mi:ss')
+            )
+    </insert>
+
+<!-- 가장 최근에 전송된 인증번호와 비교 -->
+    <select id="userEmailCertificationCheck" resultType="Info">
+        SELECT
+            *
+        FROM
+            (SELECT
+                 *
+             FROM
+                 EMAIL_CERTIFICATION
+             WHERE
+                 TEMP_USER_EMAIL=#{Email}
+             ORDER BY CREATED_AT DESC)
+        WHERE rownum &lt;= 1
+    </select>
+
+<!-- 인증번호 일치 시 DB 인증번호 제거(인증번호 쌓여 낭비되는 메모리 삭제) -->
+    <delete id="userEmailCertificationDelete">
+        DELETE FROM
+            EMAIL_CERTIFICATION
+        WHERE TEMP_USER_EMAIL = #{Email}
+    </delete>
+
+<!-- 비밀번호 찾기 (이메일 유효 검사) -->
+    <select id="userFindEmail" resultType="Info">
+        SELECT
+            user_email
+        FROM
+            Auth_Info
+        WHERE user_email =#{Email}
+    </select>
+
+<!-- 비밀번호 찾기 (비밀번호 변경) -->
+    <update id="userChangePw">
+        UPDATE Auth_Info
+        SET
+            USER_PASSWORD = #{Password}
+        WHERE
+            user_email = #{Email}
+    </update>
+</mapper>
