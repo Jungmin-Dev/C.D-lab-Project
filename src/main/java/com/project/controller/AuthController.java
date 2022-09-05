@@ -19,6 +19,10 @@ import java.util.Optional;
 @Controller
 @Api(tags = "로그인 관련 Controller")
 @CrossOrigin(origins="*")
+//1. 관리자 페이지 진입시 비밀번호 입력(지정된 비밀번호)
+//2.홈페이지에 이미지 리스트 영역 이미지 등록, 수정, 삭제, 순번 지정 기능
+//3.게시물(a태그로 링크이동, 텍스트내용, 날짜) 기입되게 등록, 수정, 삭제, 순번 지정 기능
+//4. 이메일 보내기
 public class AuthController {
 
     private final AuthService authService;
