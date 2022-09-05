@@ -21,17 +21,17 @@ import java.util.Map;
 @Api(tags = "로그인 관련 Controller")
 @CrossOrigin(origins="*")
 
-//1. 관리자 페이지 진입 시 비밀번호 입력(지정된 비밀번호) - 비밀번호 테이블
-public class AuthController {
+//1. 이메일 보내기
+public class EmailController {
     private final AuthService authService;
     private final ContentService contentService;
 
-    @ApiOperation(value = "로그인", notes = "비밀번호 확인")
-    @RequestMapping(value="/login", method = RequestMethod.POST)
+    @ApiOperation(value = "이메일 전송", notes = "이메일 전송")
+    @RequestMapping(value="/emailSend", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> login(@RequestBody String param) throws Exception{
+    public ResponseEntity<Map<String, Object>> emailSend(@RequestBody Info param) throws Exception{
         Map<String, Object> map = new HashMap<>();
-//        map.put("userEmail",authService.duplicate(param.getUserEmail()));
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
+
 }
