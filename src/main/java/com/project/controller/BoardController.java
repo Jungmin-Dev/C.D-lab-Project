@@ -16,11 +16,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
-@RequestMapping(value = "/auth")
+@RequestMapping(value = "/board")
 @Controller
-@Api(tags = "로그인 관련 Controller")
+@Api(tags = "게시글 관련 Controller")
 @CrossOrigin(origins="*")
-
 
 //1. 홈페이지에 이미지 리스트 영역 이미지 등록, 수정, 삭제 기능 - 이미지 테이블(번호, 이미지 이름, 이미지 가명, 등록 일자, 수정 일자)
 //2. 게시물(a태그로 링크이동, 텍스트내용, 날짜) 기입되게 등록, 수정 삭제 지정 기능(번호, 게시글 내용, 링크, 날짜, 페이징)

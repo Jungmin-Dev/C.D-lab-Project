@@ -24,14 +24,13 @@ import java.util.Map;
 //1. 관리자 페이지 진입 시 비밀번호 입력(지정된 비밀번호) - 비밀번호 테이블
 public class AuthController {
     private final AuthService authService;
-    private final ContentService contentService;
 
     @ApiOperation(value = "로그인", notes = "비밀번호 확인")
     @RequestMapping(value="/login", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Map<String, Object>> login(@RequestBody String param) throws Exception{
         Map<String, Object> map = new HashMap<>();
-//        map.put("userEmail",authService.duplicate(param.getUserEmail()));
+        map.put("login",authService.login(param));
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 }
