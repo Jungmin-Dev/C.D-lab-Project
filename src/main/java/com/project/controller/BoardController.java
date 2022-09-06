@@ -1,6 +1,5 @@
 package com.project.controller;
 
-import com.project.domain.Info;
 import com.project.service.AuthService;
 import com.project.service.ContentService;
 import io.swagger.annotations.Api;

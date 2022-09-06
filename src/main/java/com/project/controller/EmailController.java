@@ -1,10 +1,7 @@
 package com.project.controller;
 
 import com.project.domain.Info;
-import com.project.service.AuthService;
-import com.project.service.ContentService;
 import com.project.service.EmailService;
-import com.project.service.EmailServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
